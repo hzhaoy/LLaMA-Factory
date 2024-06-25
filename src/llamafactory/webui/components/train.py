@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import os
 from typing import TYPE_CHECKING, Dict
 
 from transformers.trainer_utils import SchedulerType
@@ -278,6 +278,9 @@ def create_train_tab(engine: "Engine") -> Dict[str, "Component"]:
 
             with gr.Row():
                 device_count = gr.Textbox(value=str(get_device_count() or 1), interactive=False)
+                device_ids = os.getenv('CUDA_VISIBLE_DEVICES').split(",") if os.getenv('CUDA_VISIBLE_DEVICES') \
+                    else list(range(get_device_count()))
+                cuda_visible_devices = gr.Dropdown(choices=device_ids, multiselect=True)
                 ds_stage = gr.Dropdown(choices=["none", "2", "3"], value="none")
                 ds_offload = gr.Checkbox()
 
@@ -291,7 +294,7 @@ def create_train_tab(engine: "Engine") -> Dict[str, "Component"]:
         with gr.Column(scale=1):
             loss_viewer = gr.Plot()
 
-    input_elems.update({output_dir, config_path, ds_stage, ds_offload})
+    input_elems.update({output_dir, config_path, device_count, cuda_visible_devices, ds_stage, ds_offload})
     elem_dict.update(
         dict(
             cmd_preview_btn=cmd_preview_btn,
@@ -303,6 +306,7 @@ def create_train_tab(engine: "Engine") -> Dict[str, "Component"]:
             output_dir=output_dir,
             config_path=config_path,
             device_count=device_count,
+            cuda_visible_devices=cuda_visible_devices,
             ds_stage=ds_stage,
             ds_offload=ds_offload,
             resume_btn=resume_btn,
