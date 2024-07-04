@@ -12,14 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import TYPE_CHECKING, Dict
+from typing import Tuple
 
-import numpy as np
+import pytest
 
-
-if TYPE_CHECKING:
-    from transformers import EvalPrediction
+from llamafactory.data.processors.processor_utils import infer_seqlen
 
 
-def compute_accuracy(eval_preds: "EvalPrediction") -> Dict[str, float]:
-    return {"accuracy": np.mean(eval_preds.predictions[0] > eval_preds.predictions[1])}
+@pytest.mark.parametrize(
+    "test_input,test_output",
+    [
+        ((3000, 2000, 1000), (600, 400)),
+        ((2000, 3000, 1000), (400, 600)),
+        ((1000, 100, 1000), (900, 100)),
+        ((100, 1000, 1000), (100, 900)),
+    ],
+)
+def test_infer_seqlen(test_input: Tuple[int, int, int], test_output: Tuple[int, int]):
+    assert test_output == infer_seqlen(*test_input)
